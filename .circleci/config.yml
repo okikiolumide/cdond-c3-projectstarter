@@ -14,7 +14,9 @@ jobs:
       - checkout
       - node/install-packages
       - run:
-          command: npm run deploy
+          command: |
+            npm install
+            npm run deploy
       - slack/notify:
           channel: circle-ci-pipeline
           event: fail
