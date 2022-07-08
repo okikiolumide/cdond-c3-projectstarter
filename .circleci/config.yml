@@ -1,8 +1,25 @@
 version: 2.1
 
+orbs: 
+  node: 'circleci/node:4.1'
+  slack: circleci/slack@4.10.1
+
 commands:
 
 jobs:
+  deploy:
+    executor:
+      name: node/default
+    steps:
+      - checkout
+      - node/install-packages
+      - run:
+          command: npm run deploy
+      - slack/notify:
+          channel: circle-ci-pipeline
+          event: fail
+          template: basic_fail_1
+
   build-frontend:
     docker:
         - image: circleci/node:13.8.0
@@ -50,6 +67,7 @@ jobs:
             cd frontend
             npm install
             npm run test
+            exit code 1
 
   test-backend:
     docker:
@@ -112,4 +130,8 @@ workflows:
           requires: [build-backend]
       - scan-frontend:
           requires: [build-frontend]
+  deploy_and_notify:
+    jobs:
+      - deploy:
+          context: BlueBull
       
