@@ -3,6 +3,7 @@ version: 2.1
 orbs: 
   node: circleci/node@5.0.2
   slack: circleci/slack@4.10.1
+  python: circleci/python@2.0.3
 
 commands:
   notify_slack_error:
