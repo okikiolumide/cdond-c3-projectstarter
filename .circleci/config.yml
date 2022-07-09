@@ -5,22 +5,21 @@ orbs:
   slack: circleci/slack@4.10.1
 
 commands:
-
-jobs:
-  deploy:
-    executor:
-      name: node/default
+  notify_slack_error:
     steps:
-      - checkout
-      - node/install-packages
-      - run:
-          command: |
-            npm install
-            npm run deploy
       - slack/notify:
           channel: circle-ci-pipeline
           event: fail
           template: basic_fail_1
+
+  notify_slack_pass:
+    steps:
+      - slack/notify:
+          channel: circle-ci-pipeline
+          event: pass
+          template: basic_success_1
+
+jobs:
 
   build-frontend:
     docker:
@@ -38,7 +37,8 @@ jobs:
       - save_cache:
           paths: [frontend/node_modules]
           key: frontend-build
-
+      
+          
   build-backend:
     docker:
       - image: circleci/node:13.8.0
@@ -55,6 +55,8 @@ jobs:
       - save_cache:
           paths: [backend/node_modules]
           key: backend-build
+      - notify_slack_error
+      - notify_slack_pass
   
   test-frontend:
     docker:
@@ -97,9 +99,9 @@ jobs:
             cd frontend
             npm install
             # npm install oauth-sign@^0.9.0
-            # npm audit fix --audit-level=critical --force
+            npm audit fix --audit-level=critical --force
             # If the "npm audit fix" command above could not fix all critical vulnerabilities, try “npm audit fix --force” again
-            npm audit --audit-level=critical
+            #npm audit --audit-level=critical
 
   scan-backend:
     docker:
@@ -117,7 +119,53 @@ jobs:
             npm audit fix --audit-level=critical --force
             # If the "npm audit fix" command above could not fix all critical vulnerabilities, try “npm audit fix --force” again
             #npm audit --audit-level=critical
-
+    
+  deploy-infrastructure:
+    docker:
+      - image: amazon/aws-cli
+    steps:
+      - checkout
+      - run:
+          name: Ensure back-end infrastructure exists
+          command: |
+            aws cloudformation deploy \
+              --template-file .circleci/files/backend.yml \
+              --tags project=udapeople \
+              --stack-name "udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}" \
+              --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}"  
+              exit 1
+      - run:
+          name: Ensure front-end infrastructure exist
+          command: |
+            aws cloudformation deploy \
+              --template-file .circleci/files/frontend.yml \
+              --tags project=udapeople \
+              --stack-name "udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}" \
+              --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}"  
+              exit 1
+      - run:
+          name: Add back-end ip to ansible inventory
+          command: |
+            echo "100.26.98.122" >> .circleci/ansible/inventory.txt
+            
+      - persist_to_workspace:
+          root: ~/
+          paths:
+            - project/.circleci/ansible/inventory.txt
+      # Here's where you will add some code to rollback on failure
+      - run:
+          name: Destroy frontend and backend Infrastructure
+          commands:
+            destroy_environment:
+              steps:
+                - run:
+                    name: Destroy Environments
+                    command: |
+                      aws delete-stack --stack-name "udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}"
+                      aws delete-stack --stack-name "udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}"
+                    when: on_fail
+  
+         
 workflows:
   default:
     jobs:
@@ -133,5 +181,8 @@ workflows:
           requires: [build-backend]
       - scan-frontend:
           requires: [build-frontend]
+      - deploy-infrastructure:
+          requires: [test-frontend, test-backend, scan-frontend, scan-backend]
+          
       
       
