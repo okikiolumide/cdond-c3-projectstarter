@@ -55,8 +55,7 @@ jobs:
       - save_cache:
           paths: [backend/node_modules]
           key: backend-build
-      - notify_slack_error
-      - notify_slack_pass
+      
   
   test-frontend:
     docker:
