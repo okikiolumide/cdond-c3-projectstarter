@@ -155,8 +155,8 @@ jobs:
       - run:
           name: Destroy frontend and backend Infrastructure
           command: |
-            aws delete-stack --stack-name "udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}"
-            aws delete-stack --stack-name "udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}"
+            aws delete-stack --stack-name udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}
+            aws delete-stack --stack-name udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}
           when: on_fail
   
          
