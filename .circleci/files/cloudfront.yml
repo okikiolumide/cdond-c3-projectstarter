@@ -5,6 +5,7 @@ Parameters:
   WorkflowID:
     Description: Unique identifier.
     Type: String
+    Default: udacity-wakcuuiu7ne4jrr
 
 
 Resources:
