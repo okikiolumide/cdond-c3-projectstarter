@@ -165,7 +165,7 @@ jobs:
   
   configure-infrastructure:
     docker:
-      - image: python:3.7-alphine3.11
+      - image: circleci/python@2.0.3
     steps:
       # Checkout code from git      
       - checkout
