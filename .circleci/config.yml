@@ -163,6 +163,27 @@ jobs:
             aws cloudformation delete-stack --stack-name udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}
           when: on_fail
   
+  configure-infrastructure:
+    docker:
+      - image: python:3.7-alphine3.11
+    steps:
+      # Checkout code from git      
+      - checkout
+      # Add ssh keys with fingerprint
+      - add_ssh_keys:
+          fingerprints:
+            - 2e:bd:47:f4:a5:7b:8d:c4:70:13:5f:53:54:f7:32:02
+      # attach workspace
+      - attach_workspace:
+        at: .
+      - run:
+          name: Install Ansible
+          command: |
+            apk add --update ansible
+      - run:
+          name: Configure server
+          command: |
+            ansible-playbook -i .circleci/ansible/inventory.txt .circleci/ansible/configure-server.yml
          
 workflows:
   default:
