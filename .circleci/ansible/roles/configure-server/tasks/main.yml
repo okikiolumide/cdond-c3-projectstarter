@@ -1,27 +1,26 @@
 - name: "update apt packages."
-    become: true
-    apt:
-      update_cache: yes
-      state: latest
+  become: true
+  apt:
+    update_cache: yes
+    state: latest
 
-  - name: "upgrade packages"
-    become: true
-    apt:
-      state: present
-      upgrade: yes
+- name: "upgrade packages"
+  become: true
+  apt:
+    state: present
+    upgrade: yes
 
-  - name: "install nodejs "
-    become: true
-    apt:
-      pkg: 
-        - nodejs
-        - npm
+- name: "install nodejs "
+  become: true
+  apt:
+    pkg: 
+      - nodejs
+      - npm
       
-
-  - name: "install pm2"
-    become: true
-    npm:
-      name: pm2
-      global: yes
-      production: yes
-      state: present
+- name: "install pm2"
+  become: true
+  npm:
+    name: pm2
+    global: yes
+    production: yes
+    state: present
