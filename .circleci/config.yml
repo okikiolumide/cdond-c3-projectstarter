@@ -166,7 +166,7 @@ jobs:
   
   configure-infrastructure:
     docker:
-      - image: circleci/python@2.0.3
+      - image: circleci/python:3.8
     steps:
       # Checkout code from git      
       - checkout
