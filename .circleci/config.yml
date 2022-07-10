@@ -152,7 +152,7 @@ jobs:
             --output text >> .circleci/ansible/inventory.txt
             cat .circleci/ansible/inventory.txt
       - persist_to_workspace:
-          root: .
+          root: ~/
           paths:
             - project/.circleci/ansible/inventory.txt
       # Here's where you will add some code to rollback on failure
@@ -184,6 +184,7 @@ jobs:
       - run:
           name: Configure server
           command: |
+            cat .circleci/ansible/inventory.txt
             ansible-playbook -i .circleci/ansible/inventory.txt .circleci/ansible/configure-server.yml
       - run:
           name: Destroy frontend and backend Infrastructure
