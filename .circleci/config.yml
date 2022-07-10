@@ -200,7 +200,7 @@ jobs:
       - persist_to_workspace:
           root: ~/
           paths:
-            - backend
+            - .
       - run:
           name: Destroy frontend and backend Infrastructure
           command: |
@@ -230,7 +230,7 @@ jobs:
       - persist_to_workspace:
           root: ~/
           paths:
-            - backend
+            - .
       - run:
           name: Send migration status to kvdb.io OR memstash.io
           command: |   
