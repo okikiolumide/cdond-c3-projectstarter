@@ -10,7 +10,7 @@
     state: present
     upgrade: yes
 
-- name: "install nodejs "
+- name: "install nodejs and npm "
   become: true
   apt:
     pkg: 
