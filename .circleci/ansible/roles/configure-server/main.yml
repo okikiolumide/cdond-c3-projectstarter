@@ -3,17 +3,26 @@
     become: yes
     apt:
       update_cache: yes
+      state: present
 
   - name: "upgrade packages"
     become: yes
     apt:
+      state: present
       upgrade: yes
 
-  - name: "install nodejs and npm"
+  - name: "install nodejs "
     become: yes
     apt:
-      name: ["nodejs", "npm"]
-      state: latest
+      name: nodejs
+      state: present
+      update_cache: yes
+
+  - name: "install npm"
+    become: yes
+    apt:
+      name: npm
+      state: present
       update_cache: yes
 
   - name: "install pm2"
