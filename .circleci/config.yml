@@ -228,9 +228,9 @@ jobs:
               npm run migrations > migrations_dump.txt
               cat migrations_dump.txt
       - persist_to_workspace:
-        root: ~/
-        paths:
-          - project/backend
+          root: ~/
+          paths:
+            - project/backend
       - run:
           name: Send migration status to kvdb.io OR memstash.io
           command: |   
