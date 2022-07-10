@@ -152,7 +152,7 @@ jobs:
             --output text >> .circleci/ansible/inventory.txt
             cat .circleci/ansible/inventory.txt
       - persist_to_workspace:
-          root: ~/
+          root: .
           paths:
             - project/.circleci/ansible/inventory.txt
       # Here's where you will add some code to rollback on failure
@@ -185,6 +185,13 @@ jobs:
           name: Configure server
           command: |
             ansible-playbook -i .circleci/ansible/inventory.txt .circleci/ansible/configure-server.yml
+      - run:
+          name: Destroy frontend and backend Infrastructure
+          command: |
+            aws s3 rm s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} >> --recursive
+            aws cloudformation delete-stack --stack-name udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}
+            aws cloudformation delete-stack --stack-name udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}
+          when: on_fail
 
   run-migrations:
     docker:
