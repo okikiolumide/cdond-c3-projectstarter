@@ -184,7 +184,7 @@ jobs:
           name: Configure server
           command: |
             echo NODE_ENV=production >> backend/.env
-            echo ENVIRONMENT=production >> backend/.env
+            # echo ENVIRONMENT=production >> backend/.env
             echo TYPEORM_CONNECTION=$TYPEORM_CONNECTION >> backend/.env
             echo TYPEORM_ENTITIES=$TYPEORM_ENTITIES >> backend/.env
             echo TYPEORM_HOST=$TYPEORM_HOST >> backend/.env
@@ -219,8 +219,20 @@ jobs:
       - attach_workspace:
           at: .
       - run:
+          name: Install deps
+          command: |
+            
+            sudo apt install -y tar gzip curl
+            curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+            unzip -qq awscliv2.zip
+            sudo ./aws/install
+           
+      - run:
           name: Run migrations
           command: |
+              export TYPEORM_HOST=$(aws cloudformation list-exports --query "Exports[?Name==\`EndpointAddress-${CIRCLE_WORKFLOW_ID:0:7}\`].Value" --output text)
+              echo $TYPEORM_HOST
+              echo TYPEORM_HOST=$TYPEORM_HOST >> ~/project/backend/.env
               cd backend
               # npm install
               npm run build
