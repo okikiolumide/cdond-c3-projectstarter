@@ -303,21 +303,28 @@ jobs:
 
   deploy-backend:
     docker:
-      # Docker image here that supports Ansible
+      - image: cimg/python:3.8.4
     steps:
       # Checkout code from git
-      # Add ssh keys with fingerprint
+      - add_ssh_keys:
+          fingerprints:
+            - 2e:bd:47:f4:a5:7b:8d:c4:70:13:5f:53:54:f7:32:02
       # attach workspace
+      - attach_workspace:
+          at: .
       - run:
           name: Install dependencies
           command: |
-            # your code here
+            sudo apt install -y tar gzip curl
+            curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+            unzip -qq awscliv2.zip
+            sudo ./aws/install
       - run:
           name: Deploy backend
           command: |
-            # your code here
+            ansible-playbook -i .circleci/ansible/inventory.txt .circleci/ansible/deploy-backend.yml
       # Here's where you will add some code to rollback on failure
-      
+
 workflows:
   default:
     jobs:
@@ -338,6 +345,8 @@ workflows:
       - run-migrations:
           requires: [configure-infrastructure]
       - deploy-frontend:
+          requires: [run-migrations]
+      - deploy-backend:
           requires: [run-migrations]
           
       
