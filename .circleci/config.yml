@@ -314,7 +314,7 @@ jobs:
             apk add --no-cache openssh-client
             apk add --no-cache --upgrade bash
             pip install awscli
-       - run:
+      - run:
           name: Adding .env data
           command: |
             touch backend/.env
@@ -330,7 +330,7 @@ jobs:
             echo TYPEORM_PASSWORD=$TYPEORM_PASSWORD >> "backend/.env"
             echo TYPEORM_DATABASE=$TYPEORM_DATABASE >> "backend/.env"
             cd backend
-            cat .env
+            cat .env  
       - run:
           name: zip backend
           command: |
