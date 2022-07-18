@@ -351,6 +351,46 @@ jobs:
             aws cloudformation delete-stack --stack-name udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}
           when: on_fail
 
+  smoke-test:
+    docker:
+      - image: python:3.7-alpine3.11
+    steps:
+      - checkout
+      - run:
+          name: Install dependencies
+          command: |
+            apk add --update curl
+            pip install awscli
+      - run:
+          name: Frontend smoke test.
+          command: |
+            FRONTEND_URL="http://udapeople-${CIRCLE_WORKFLOW_ID}.s3-website-us-east-1.amazonaws.com"
+            echo ${FRONTEND_URL}
+            if curl -s ${FRONTEND_URL} | grep "Welcome"
+            then
+              return 0
+            else
+              return 1
+            fi
+
+      - run:
+        name: Backend Smoke Test
+        command: |
+          BACKEND_URL=$(aws ec2 describe-instances \
+                --filters "Name=tag:Name, Values=backend-${CIRCLE_WORKFLOW_ID}" \
+                --query 'Reservations[*].Instances[*].PublicDnsName' \
+                --output text)
+          echo ${BACKEND_URL}
+          export ENDPOINT_URL="http://$BACKEND_URL:3030/api/status"
+          echo $ENDPOINT_URL
+          curl $ENDPOINT_URL
+          if curl -s ${ENDPOINT_URL} | grep "ok"
+          then
+            exit 0
+          else
+            exit 1
+          fi        
+
 workflows:
   default:
     jobs:
@@ -374,6 +414,7 @@ workflows:
           requires: [run-migrations]
       - deploy-backend:
           requires: [run-migrations]
-          
+      - smoke-test:
+          requires: [deploy-backend, deploy-frontend]    
       
       
