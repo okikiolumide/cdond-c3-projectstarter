@@ -12,26 +12,23 @@
       #src: /root/project/backend/dist
       src: /root/project/artifact.tar.gz
       #src: /root/project/
-      dest: /home/ubuntu/
+      dest: /home/ubuntu/artifact.tar.gz
 
   - name: "Untar backend folder"
     become: true
     shell: |
-      cd /home/ubuntu/
+      cd /home/ubuntu
       tar -xzvf artifact.tar.gz
-      ls -lha
+      ls -la
   - name: Install Node modules
     become: true
     shell: |
-      cd /home/ubuntu/backend
-      npm i
-  - name: Building backend
-    become: true
-    shell: |
-      cd /home/ubuntu/backend
+      cd /home/ubuntu
+      npm install
       npm run build
+
   - name: Start pm2 service
     become: true
     shell: |
-      cd /home/ubuntu/backend
+      cd /home/ubuntu
       pm2 start npm --name backend -- start
