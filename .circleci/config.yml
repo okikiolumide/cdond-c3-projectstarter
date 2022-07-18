@@ -373,23 +373,23 @@ jobs:
               return 1
             fi
 
-      # - run:
-      #     name: Backend Smoke Test
-      #     command: |
-      #       BACKEND_URL=$(aws ec2 describe-instances \
-      #             --filters "Name=tag:project, Values=udapeople-backend" \
-      #             --query 'Reservations[*].Instances[*].PublicDnsName' \
-      #             --output text)
-      #       echo ${BACKEND_URL}
-      #       export ENDPOINT_URL="http://$BACKEND_URL:3030/api/status"
-      #       echo $ENDPOINT_URL
-      #       curl $ENDPOINT_URL
-      #       if curl -s ${ENDPOINT_URL} | grep "ok"
-      #       then
-      #         exit 0
-      #       else
-      #         exit 1
-      #       fi        
+      - run:
+          name: Backend Smoke Test
+          command: |
+            BACKEND_URL=$(aws ec2 describe-instances \
+                  --filters "Name=tag:project, Values=udapeople-backend" \
+                  --query 'Reservations[*].Instances[*].PublicDnsName' \
+                  --output text)
+            echo ${BACKEND_URL}
+            export ENDPOINT_URL="http://$BACKEND_URL:3030/api/status"
+            echo $ENDPOINT_URL
+            curl $ENDPOINT_URL
+            if curl -s ${ENDPOINT_URL} | grep "ok"
+            then
+              exit 0
+            else
+              exit 1
+            fi        
 
 workflows:
   default:
