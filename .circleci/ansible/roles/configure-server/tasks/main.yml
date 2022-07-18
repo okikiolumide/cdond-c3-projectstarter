@@ -10,12 +10,13 @@
     state: present
     upgrade: yes
 
-- name: "install nodejs and npm "
+- name: "Install Node.js 13"
   become: true
-  apt:
-    pkg: 
-      - nodejs
-      - npm
+  shell: |
+    curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo -E bash -
+    sudo apt install -y nodejs
+    sudo npm install --global n
+    sudo n 13.8.0
 
 - name: "install pm2"
   become: true
