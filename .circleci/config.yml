@@ -377,7 +377,7 @@ jobs:
           name: Backend Smoke Test
           command: |
             BACKEND_URL=$(aws ec2 describe-instances \
-                  --filters "Name=tag:Name, Values=backend-${CIRCLE_WORKFLOW_ID}" \
+                  --filters "Name=tag:Name, Values=udapeople-backend" \
                   --query 'Reservations[*].Instances[*].PublicDnsName' \
                   --output text)
             echo ${BACKEND_URL}
