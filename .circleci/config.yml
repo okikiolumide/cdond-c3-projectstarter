@@ -364,32 +364,32 @@ jobs:
       - run:
           name: Frontend smoke test.
           command: |
-            FRONTEND_URL="http://udapeople-${CIRCLE_WORKFLOW_ID:0:7}.s3-website-us-east-1.amazonaws.com"
+            FRONTEND_URL="http://udapeople-${CIRCLE_WORKFLOW_ID:0:7}.s3-website-us-east-1.amazonaws.com/#/employees"
             echo ${FRONTEND_URL}
             if curl -s ${FRONTEND_URL} | grep "Welcome"
             then
-              return 0
+              return 1
             else
               return 1
             fi
 
-      - run:
-          name: Backend Smoke Test
-          command: |
-            BACKEND_URL=$(aws ec2 describe-instances \
-                  --filters "Name=tag:Name, Values=udapeople-backend" \
-                  --query 'Reservations[*].Instances[*].PublicDnsName' \
-                  --output text)
-            echo ${BACKEND_URL}
-            export ENDPOINT_URL="http://$BACKEND_URL:3030/api/status"
-            echo $ENDPOINT_URL
-            curl $ENDPOINT_URL
-            if curl -s ${ENDPOINT_URL} | grep "ok"
-            then
-              exit 0
-            else
-              exit 1
-            fi        
+      # - run:
+      #     name: Backend Smoke Test
+      #     command: |
+      #       BACKEND_URL=$(aws ec2 describe-instances \
+      #             --filters "Name=tag:project, Values=udapeople-backend" \
+      #             --query 'Reservations[*].Instances[*].PublicDnsName' \
+      #             --output text)
+      #       echo ${BACKEND_URL}
+      #       export ENDPOINT_URL="http://$BACKEND_URL:3030/api/status"
+      #       echo $ENDPOINT_URL
+      #       curl $ENDPOINT_URL
+      #       if curl -s ${ENDPOINT_URL} | grep "ok"
+      #       then
+      #         exit 0
+      #       else
+      #         exit 1
+      #       fi        
 
 workflows:
   default:
