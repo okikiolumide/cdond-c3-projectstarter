@@ -380,7 +380,7 @@ jobs:
                   --filters "Name=tag:project, Values=udapeople-backend" \
                   --query 'Reservations[*].Instances[*].PublicDnsName' \
                   --output text)
-            echo ${BACKEND_URL}
+            echo $BACKEND_URL
             export ENDPOINT_URL="http://$BACKEND_URL:3030/api/status"
             echo $ENDPOINT_URL
             curl $ENDPOINT_URL
