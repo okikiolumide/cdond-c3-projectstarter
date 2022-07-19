@@ -1,10 +1,26 @@
 ---
-- name: "Creates backend app directory"
-  file:
-    path: ~/backend-app
-    state: directory
+  - name: "install dependencies."
+    become: true
+    apt:
+      name: "tar"
+      state: latest
+      update_cache: yes
 
-- name: "Unarchive backend files to ec2"
+  - name: "copy tar file "
+    become: true
+    copy:
+      #src: /root/project/backend/dist
+      src: /root/project/artifact.tar.gz
+      #src: /root/project/
+      dest: ~/backend-app/artifact.tar.gz
+
+  - name: "Untar backend folder"
+    become: true
+    shell: |
+      cd ~/backend-app
+      tar -xzvf artifact.tar.gz
+      ls -la
+  - name: "Unarchive backend files to ec2"
   ansible.builtin.unarchive:
     src: artifact.tar.gz
     dest: ~/backend-app
@@ -17,8 +33,8 @@
 - name: "Executing Node app with PM2"
   shell: |
     cd ~/backend-app/dist
-    pm2 stop default
-    pm2 start main.js
+    sudo pm2 stop default
+    sudo pm2 start main.js
   register: execute_node
 
 - name: print message
