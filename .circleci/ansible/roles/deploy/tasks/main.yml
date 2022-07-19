@@ -20,26 +20,28 @@
       cd ~/backend-app
       tar -xzvf artifact.tar.gz
       ls -la
+
   - name: "Unarchive backend files to ec2"
-  ansible.builtin.unarchive:
-    src: artifact.tar.gz
-    dest: ~/backend-app
-    
+    ansible.builtin.unarchive:
+      src: /root/project/artifact.tar.gz
+      dest: ~/backend-app
+      
 
-- name: "Installing Node Dependencies"
-  shell: |
-    cd ~/backend-app
-    npm i
-- name: "Executing Node app with PM2"
-  shell: |
-    cd ~/backend-app/dist
-    sudo pm2 stop default
-    sudo pm2 start main.js
-  register: execute_node
+  - name: "Installing Node Dependencies"
+    shell: |
+      cd ~/backend-app
+      npm i
 
-- name: print message
-  debug:
-    msg: "{{ execute_node.stdout_lines }}"
+  - name: "Executing Node app with PM2"
+    shell: |
+      cd ~/backend-app/dist
+      sudo pm2 stop default
+      sudo pm2 start main.js
+    register: execute_node
+
+  - name: print message
+    debug:
+      msg: "{{ execute_node.stdout_lines }}"
 
 - name: "Configure pm2 to start as service"
   shell: |
