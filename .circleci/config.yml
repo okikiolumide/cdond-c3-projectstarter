@@ -13,6 +13,35 @@ commands:
           event: fail
           template: basic_fail_1
 
+  destroy-environment:
+    description: Destroy back-end and front-end cloudformation stacks given a workflow ID.
+    parameters:
+      workflow_id:
+        type: string 
+    steps:
+      - run:
+          name: Destroy environments
+          when: on_fail
+          command: |
+            aws cloudformation delete-stack --stack-name udapeople-frontend-<< parameters.workflow_id >>
+            aws cloudformation delete-stack --stack-name udapeople-backend-<< parameters.workflow_id >>
+            aws s3 rb s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --force
+
+  revert-migrations:
+    description: Revert the last migration if successfully run in the current workflow.  
+    steps:
+      - run:
+          name: Revert migrations
+          when: on_fail
+          command: |
+            success_migration=$(SUCCESS=$(curl --insecure  https://kvdb.io/WUhsGXSRq2qCbctVe1v95E/migration_${CIRCLE_WORKFLOW_ID:0:7}))
+            if((${success_migration}==1)); 
+            then
+              cd ~/project/backend
+              npm install
+              npm run migrations:revert
+            fi
+
   notify_slack_pass:
     steps:
       - slack/notify:
@@ -369,7 +398,7 @@ jobs:
             echo ${FRONTEND_URL}
             if curl -s ${FRONTEND_URL} | grep "Welcome"
             then
-              return 0
+              return 1
             else
               return 1
             fi
@@ -391,6 +420,9 @@ jobs:
             else
               exit 1
             fi        
+      - destroy-environment:
+          workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
+      - revert-migrations
 
 workflows:
   default:
