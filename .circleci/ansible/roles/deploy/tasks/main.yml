@@ -6,6 +6,12 @@
       state: latest
       update_cache: yes
 
+  - name: "Create backend folder"
+    become: true
+    shell: |
+      mkdir -p ~/backend-app
+      
+
   - name: "copy tar file "
     become: true
     copy:
