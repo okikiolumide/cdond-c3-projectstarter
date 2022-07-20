@@ -12,14 +12,8 @@
   become: true
   shell: |
     cd /home/ubuntu/backend
-    npm install -g npm@latest
-- name: "install package dependencies"
-  become: true
-  shell: |
-    cd /home/ubuntu/backend   
-    ls -la
-    npm install
-    npm audit fix --audit-level=critical --force
+    npm install 
+
 - name: "build package"
   become: true
   shell: |
