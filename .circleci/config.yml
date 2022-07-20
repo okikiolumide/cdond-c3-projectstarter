@@ -314,35 +314,35 @@ jobs:
             apk add --no-cache openssh-client
             apk add --no-cache --upgrade bash
             pip install awscli
-      - run:
-          name: Adding .env data
-          command: |
-            touch backend/.env
-            echo NODE_ENV=$ENVIRONMENT >> "backend/.env"
-            echo VERSION=${CIRCLE_WORKFLOW_ID:0:7} >> "backend/.env"
-            echo TYPEORM_CONNECTION=$TYPEORM_CONNECTION >> "backend/.env"
-            echo TYPEORM_MIGRATIONS_DIR=$TYPEORM_MIGRATIONS_DIR >> "backend/.env"
-            echo TYPEORM_ENTITIES=$TYPEORM_ENTITIES >> "backend/.env"
-            echo TYPEORM_MIGRATIONS=$TYPEORM_MIGRATIONS >> "backend/.env"
-            echo TYPEORM_HOST=$TYPEORM_HOST >> "backend/.env"
-            echo TYPEORM_PORT=$TYPEORM_PORT >> "backend/.env"
-            echo TYPEORM_USERNAME=$TYPEORM_USERNAME >> "backend/.env"
-            echo TYPEORM_PASSWORD=$TYPEORM_PASSWORD >> "backend/.env"
-            echo TYPEORM_DATABASE=$TYPEORM_DATABASE >> "backend/.env"
-            cd backend
-            cat .env  
-      - run:
-          name: zip backend
-          command: |
-            tar -czvf artifact.tar.gz backend
-            pwd
-            ls -la
+      # - run:
+      #     name: Adding .env data
+      #     command: |
+      #       touch backend/.env
+      #       echo NODE_ENV=$ENVIRONMENT >> "backend/.env"
+      #       echo VERSION=${CIRCLE_WORKFLOW_ID:0:7} >> "backend/.env"
+      #       echo TYPEORM_CONNECTION=$TYPEORM_CONNECTION >> "backend/.env"
+      #       echo TYPEORM_MIGRATIONS_DIR=$TYPEORM_MIGRATIONS_DIR >> "backend/.env"
+      #       echo TYPEORM_ENTITIES=$TYPEORM_ENTITIES >> "backend/.env"
+      #       echo TYPEORM_MIGRATIONS=$TYPEORM_MIGRATIONS >> "backend/.env"
+      #       echo TYPEORM_HOST=$TYPEORM_HOST >> "backend/.env"
+      #       echo TYPEORM_PORT=$TYPEORM_PORT >> "backend/.env"
+      #       echo TYPEORM_USERNAME=$TYPEORM_USERNAME >> "backend/.env"
+      #       echo TYPEORM_PASSWORD=$TYPEORM_PASSWORD >> "backend/.env"
+      #       echo TYPEORM_DATABASE=$TYPEORM_DATABASE >> "backend/.env"
+      #       cd backend
+      #       cat .env  
+      # - run:
+      #     name: zip backend
+      #     command: |
+      #       tar -czvf artifact.tar.gz backend
+      #       pwd
+      #       ls -la
       - run:
           name: Deploy backend
           command: |
-            export TYPEORM_MIGRATIONS_DIR=./migrations
-            export TYPEORM_ENTITIES=./modules/domain/**/*.entity{.ts,.js}
-            export TYPEORM_MIGRATIONS=./migrations/*.ts
+            cd backend
+            npm i
+            npm run build
             export ANSIBLE_HOST_KEY_CHECKING=False 
             ansible-playbook -i .circleci/ansible/inventory.txt .circleci/ansible/deploy-backend.yml
       # Here's where you will add some code to rollback on failure
