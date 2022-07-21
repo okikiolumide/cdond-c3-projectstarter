@@ -189,18 +189,13 @@ jobs:
           paths:
             - .
       # Here's where you will add some code to rollback on failure
-      - run:
-          name: Destroy frontend and backend Infrastructure
-          command: |
-            aws s3 rm s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} >> --recursive
-            aws cloudformation delete-stack --stack-name udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}
-            aws cloudformation delete-stack --stack-name udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}
-          when: on_fail
+      - destroy-environment:
+          workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
   
   configure-infrastructure:
     docker:
-      - image: python:3.7-alpine3.11
-    steps:
+      - image: p3.7-alpine3.11
+    steps:ython:
       # Checkout code from git      
       # Add ssh keys with fingerprint
       - add_ssh_keys:
@@ -220,13 +215,8 @@ jobs:
             
             cat .circleci/ansible/inventory.txt
             ansible-playbook -i .circleci/ansible/inventory.txt .circleci/ansible/configure-server.yml
-      - run:
-          name: Destroy frontend and backend Infrastructure
-          command: |
-            aws s3 rm s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} >> --recursive
-            aws cloudformation delete-stack --stack-name udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}
-            aws cloudformation delete-stack --stack-name udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}
-          when: on_fail
+      - destroy-environment:
+          workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
 
   run-migrations:
     docker:
@@ -254,7 +244,7 @@ jobs:
       - run:
           name: Send migration status to kvdb.io OR memstash.io
           command: |   
-              if grep -q "has been executed successfully." ~/backend/migrations_dump.txt
+              if grep -q "has been executed successfully." ~/backend/migration-log.txt
               then
                   cat  https://kvdb.io/WUhsGXSRq2qCbctVe1v95E/migration_${CIRCLE_WORKFLOW_ID:0:7}
                   curl  https://kvdb.io/WUhsGXSRq2qCbctVe1v95E/migration_${CIRCLE_WORKFLOW_ID:0:7}  -d 'Successful'
@@ -279,13 +269,8 @@ jobs:
       - save_cache:
           paths: [backend/node_modules]
           key: backend-build
-      - run:
-          name: Destroy frontend and backend Infrastructure
-          command: |
-            aws s3 rm s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} >> --recursive
-            aws cloudformation delete-stack --stack-name udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}
-            aws cloudformation delete-stack --stack-name udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}
-          when: on_fail
+      - destroy-environment:
+          workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
 
   deploy-frontend:
     docker:
@@ -317,13 +302,8 @@ jobs:
             npm run build
             tar -czvf artifact-"${CIRCLE_WORKFLOW_ID:0:7}".tar.gz dist
             aws s3 cp dist s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --recursive  
-      - run:
-          name: Destroy frontend and backend Infrastructure
-          command: |
-            aws s3 rm s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} >> --recursive
-            aws cloudformation delete-stack --stack-name udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}
-            aws cloudformation delete-stack --stack-name udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}
-          when: on_fail
+      - destroy-environment:
+          workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
 
   deploy-backend:
     docker:
@@ -373,13 +353,8 @@ jobs:
             export ANSIBLE_HOST_KEY_CHECKING=False 
             ansible-playbook -i .circleci/ansible/inventory.txt .circleci/ansible/deploy-backend.yml
       # Here's where you will add some code to rollback on failure
-      - run:
-          name: Destroy frontend and backend Infrastructure
-          command: |
-            aws s3 rm s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} >> --recursive
-            aws cloudformation delete-stack --stack-name udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}
-            aws cloudformation delete-stack --stack-name udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}
-          when: on_fail
+      - destroy-environment:
+          workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
 
   smoke-test:
     docker:
@@ -398,7 +373,7 @@ jobs:
             echo ${FRONTEND_URL}
             if curl -s ${FRONTEND_URL} | grep "Welcome"
             then
-              return 1
+              return 0
             else
               return 1
             fi
@@ -420,6 +395,29 @@ jobs:
             else
               exit 1
             fi        
+      - destroy-environment:
+          workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
+      - revert-migrations
+
+  cloudfront-update:
+    docker:
+      - image: amazon/aws-cli
+    steps:
+      - checkout
+      - run:
+          name: Install dependencies
+          command: |
+            curl -sL https://rpm.nodesource.com/setup_lts.x | bash -
+            yum -y install nodejs
+            yum -y install tar gzip
+      - run:
+          name: Update cloudfront distribution
+          command: |   
+            aws cloudformation deploy \
+            --template-file .circleci/files/cloudfront.yml \
+            --tags project=udapeople \
+            --stack-name udapeople-cloudfront \
+            --parameter-overrides WorkflowID="${CIRCLE_WORKFLOW_ID:0:7}"
       - destroy-environment:
           workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
       - revert-migrations
@@ -448,6 +446,8 @@ workflows:
       - deploy-backend:
           requires: [run-migrations]
       - smoke-test:
-          requires: [deploy-backend, deploy-frontend]    
+          requires: [deploy-backend, deploy-frontend]  
+      - cloudfront-update:
+          requires: [smoke-test]  
       
       
